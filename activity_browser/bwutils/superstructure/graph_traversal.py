@@ -474,7 +474,7 @@ class GraphTraversal:
 
     def traverse_importance_first(
         self,
-        to_node: GTNode,
+        to_node: GTTechnosphereNode,
         to_amount: Real,
         depth: int,
         max_depth: int,
@@ -482,8 +482,8 @@ class GraphTraversal:
         abs_cutoff: Real,
     ) -> None:
 
-        heap = []
-        heappush(heap, (0, to_node, to_amount, depth))
+        heap: List[Tuple[float, GTTechnosphereNode, Real, int]] = []
+        heappush(heap, (0., to_node, to_amount, depth))
 
         while heap:
 
@@ -535,6 +535,9 @@ class GraphTraversal:
                 if from_index == to_node.index:
                     continue
 
+                # do not add edge if node already in node list
+                from_node_to_heap = self.techno_node_list.get_by_index(from_index) is None
+
                 # get node from node list or create new one if it doesn't exist
                 from_node = self._get_or_add_technosphere_node(
                     index=from_index
@@ -545,12 +548,12 @@ class GraphTraversal:
                     from_node=from_node,
                     from_amount=from_amount,
                     to_node=to_node,
-                    to_amount=to_amount,
+                    to_amount=to_node.amount,
                     abs_cutoff=abs_cutoff,
                 )
 
                 # add source to priority list if edge impact is above cutoff
-                if edge:
+                if edge and from_node_to_heap:
                     heappush(
                         heap,
                         (
